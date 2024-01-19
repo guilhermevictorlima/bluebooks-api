@@ -3,7 +3,6 @@ import fetch from 'node-fetch';
 
 const server = express();
 const PORT = process.env.PORT || 3000;
-const URL_POST_BOOKS = 'https://requisitos.bluesoft.com.br/api/books';
 
 server.use(function (req, res, next) {
 	res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
@@ -14,13 +13,13 @@ server.use(function (req, res, next) {
 	next();
 });
 
-async function sendRequestAPI(jsonArray, tokenId, tokenSecret) {
+async function sendRequestAPI(jsonArray, tokenId, tokenSecret, url) {
 	const responses = [];
 	console.log(`Token ${tokenId}:${tokenSecret}`);
 
 	for (const json of jsonArray) {
 		try {
-			const res = await fetch(URL_POST_BOOKS, {
+			const res = await fetch(url, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -49,7 +48,7 @@ server.post('/', (req, res) => {
 	req.on('end', async () => {
 		try {
 			const json = JSON.parse(data);
-			const responses = await sendRequestAPI(json.requestJsons, json.tokenId, json.tokenSecret);
+			const responses = await sendRequestAPI(json.requestJsons, json.tokenId, json.tokenSecret, json.url);
 			console.log(`Quantidade de respostas: ${responses.length}`);
 			res.status(200).json(responses);	
 		} catch(error) {
