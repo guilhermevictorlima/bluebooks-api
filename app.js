@@ -47,10 +47,15 @@ server.post('/', (req, res) => {
 
 	req.on('data', chunk => data += chunk);
 	req.on('end', async () => {
-		const json = JSON.parse(data);
-		const responses = await sendRequestAPI(json.requestJsons, json.tokenId, json.tokenSecret);
-		console.log(`Quantidade de respostas: ${responses.length}`)
-		res.json(JSON.parse(responses));
+		try {
+			const json = JSON.parse(data);
+			const responses = await sendRequestAPI(json.requestJsons, json.tokenId, json.tokenSecret);
+			console.log(`Quantidade de respostas: ${responses.length}`);
+			res.status(200).json(responses);	
+		} catch(error) {
+			console.error(error);
+			res.status(500).json(error);
+		}
 	});
 });
 
