@@ -5,6 +5,14 @@ const server = express();
 const PORT = process.env.PORT || 3000;
 const URL_POST_BOOKS = 'https://requisitos.bluesoft.com.br/api/books';
 
+server.use(function (req, res, next) {
+	res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
+	res.setHeader('Access-Control-Allow-Methods', 'POST');
+	res.setHeader('Access-Control-Allow-Headers', '*');
+	res.setHeader('Access-Control-Allow-Credentials', true);
+
+	next();
+});
 
 async function sendRequestAPI(jsonArray, tokenId, tokenSecret) {
 	const responses = [];
@@ -32,16 +40,6 @@ async function sendRequestAPI(jsonArray, tokenId, tokenSecret) {
 	return responses;
 }
 
-
-server.use(function (req, res, next) {
-	res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
-	res.setHeader('Access-Control-Allow-Methods', 'POST');
-	res.setHeader('Access-Control-Allow-Headers', '*');
-	res.setHeader('Access-Control-Allow-Credentials', true);
-
-	next();
-});
-
 server.post('/', (req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -52,7 +50,7 @@ server.post('/', (req, res) => {
 		const json = JSON.parse(data);
 		const responses = await sendRequestAPI(json.requestJsons, json.tokenId, json.tokenSecret);
 		console.log(`Quantidade de respostas: ${responses.length}`)
-		res.json(responses);
+		res.json(JSON.parse(responses));
 	});
 });
 
