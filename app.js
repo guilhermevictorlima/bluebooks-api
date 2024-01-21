@@ -19,7 +19,7 @@ async function sendRequestAPI(jsonArray, tokenId, tokenSecret, url) {
 
 	for (const json of jsonArray) {
 		try {
-			const res = await fetch(url, {
+			const requestResponse = await fetch(url, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -28,8 +28,14 @@ async function sendRequestAPI(jsonArray, tokenId, tokenSecret, url) {
 				body: JSON.stringify(json),
 			});
 
-			console.error(`Requisição enviada com sucesso: ${json.name}`)
-			responses.push({ response: res, json });
+			if (requestResponse.ok) {
+				console.log(`Requisição enviada com sucesso: ${json.name}`);
+				responses.push(await requestResponse.json());
+			} else {
+				console.log(JSON.stringify(json, null, 2));
+				console.error(`Algo de errado ocorreu ao realizar a requisição: Status ${requestResponse.status}, JSON: ${JSON.stringify(await requestResponse.json(), null, 2)}`);
+				responses.push({ error: `Algo de errado ocorreu ao realizar a requisição: Status ${requestResponse.status}, JSON: ${JSON.stringify(await requestResponse.json())}`});
+			}
 		} catch (error) {
 			console.error(`Ocorreu um erro: ${error}`)
 			responses.push({ error: `Erro ao realizar requisição (${json.name}): ${error}`, json });
@@ -50,8 +56,8 @@ server.post('/', (req, res) => {
 			const json = JSON.parse(data);
 			const responses = await sendRequestAPI(json.requestJsons, json.tokenId, json.tokenSecret, json.url);
 			console.log(`Quantidade de respostas: ${responses.length}`);
-			res.status(200).json(responses);	
-		} catch(error) {
+			res.status(200).json(responses);
+		} catch (error) {
 			console.error(error);
 			res.status(500).json(error);
 		}
