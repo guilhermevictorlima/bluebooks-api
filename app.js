@@ -13,29 +13,34 @@ server.use(function (req, res, next) {
 	next();
 });
 
-async function sendRequestAPI(jsonArray, tokenId, tokenSecret, url, httpMethod) {
+
+async function makeRequest(body, tokenId, tokenSecret, url, httpMethod) {
+	const requestResponse = await fetch(url, {
+		method: httpMethod,
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': `Token ${tokenId}:${tokenSecret}`,
+		},
+		body: body
+	});
+
+	if (requestResponse.ok) {
+		console.log(`Requisição enviada com sucesso: ${body ? body.name : httpMethod}`);
+		return await requestResponse.json();
+	} else {
+		console.log(JSON.stringify(body, null, 2));
+		console.error(`Algo de errado ocorreu ao realizar a requisição: Status ${requestResponse.status}, JSON: ${JSON.stringify(await requestResponse.json(), null, 2)}`);
+		return { error: `Algo de errado ocorreu ao realizar a requisição: Status ${requestResponse.status}, JSON: ${JSON.stringify(await requestResponse.json())}` };
+	}
+
+}
+
+async function sendRequestsByJsons(jsonArray, tokenId, tokenSecret, url, httpMethod) {
 	const responses = [];
-	console.log(`Token ${tokenId}:${tokenSecret}`);
 
 	for (const json of jsonArray) {
 		try {
-			const requestResponse = await fetch(url, {
-				method: httpMethod,
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Token ${tokenId}:${tokenSecret}`,
-				},
-				body: JSON.stringify(json),
-			});
-
-			if (requestResponse.ok) {
-				console.log(`Requisição enviada com sucesso: ${json.name}`);
-				responses.push(await requestResponse.json());
-			} else {
-				console.log(JSON.stringify(json, null, 2));
-				console.error(`Algo de errado ocorreu ao realizar a requisição: Status ${requestResponse.status}, JSON: ${JSON.stringify(await requestResponse.json(), null, 2)}`);
-				responses.push({ error: `Algo de errado ocorreu ao realizar a requisição: Status ${requestResponse.status}, JSON: ${JSON.stringify(await requestResponse.json())}`});
-			}
+			responses.push(await makeRequest(JSON.stringify(json), tokenId, tokenSecret, url, httpMethod));
 		} catch (error) {
 			console.error(`Ocorreu um erro: ${error}`)
 			responses.push({ error: `Erro ao realizar requisição (${json.name}): ${error}`, json });
@@ -54,7 +59,16 @@ server.post('/', (req, res) => {
 	req.on('end', async () => {
 		try {
 			const json = JSON.parse(data);
-			const responses = await sendRequestAPI(json.requestJsons, json.tokenId, json.tokenSecret, json.url, json.httpMethod);
+			console.log(`Token ${json.tokenId}:${json.tokenSecret}`);
+
+			let responses;
+
+			if (json.httpMethod === 'POST' || json.httpMethod === 'PUT') {
+				responses = await sendRequestsByJsons(json.requestJsons, json.tokenId, json.tokenSecret, json.url, json.httpMethod);
+			} else {
+				responses = await makeRequest(null, json.tokenId, json.tokenSecret, json.url, json.httpMethod);
+			}
+
 			console.log(`Quantidade de respostas: ${responses.length}`);
 			res.status(200).json(responses);
 		} catch (error) {
