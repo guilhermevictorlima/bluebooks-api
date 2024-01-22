@@ -13,14 +13,14 @@ server.use(function (req, res, next) {
 	next();
 });
 
-async function sendRequestAPI(jsonArray, tokenId, tokenSecret, url) {
+async function sendRequestAPI(jsonArray, tokenId, tokenSecret, url, httpMethod) {
 	const responses = [];
 	console.log(`Token ${tokenId}:${tokenSecret}`);
 
 	for (const json of jsonArray) {
 		try {
 			const requestResponse = await fetch(url, {
-				method: 'POST',
+				method: httpMethod,
 				headers: {
 					'Content-Type': 'application/json',
 					'Authorization': `Token ${tokenId}:${tokenSecret}`,
@@ -54,7 +54,7 @@ server.post('/', (req, res) => {
 	req.on('end', async () => {
 		try {
 			const json = JSON.parse(data);
-			const responses = await sendRequestAPI(json.requestJsons, json.tokenId, json.tokenSecret, json.url);
+			const responses = await sendRequestAPI(json.requestJsons, json.tokenId, json.tokenSecret, json.url, json.httpMethod);
 			console.log(`Quantidade de respostas: ${responses.length}`);
 			res.status(200).json(responses);
 		} catch (error) {
