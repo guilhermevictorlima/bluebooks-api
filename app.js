@@ -26,7 +26,7 @@ async function makeRequest(body, requestName, tokenId, tokenSecret, url, httpMet
 
 	if (requestResponse.ok) {
 		console.log(`Requisição enviada com sucesso: ${requestName ? requestName : httpMethod}`);
-		return await requestResponse.json();
+		return httpMethod === 'DELETE' ? requestResponse.status : await requestResponse.json();
 	} else {
 		console.log(JSON.stringify(body, null, 2));
 		console.error(`Algo de errado ocorreu ao realizar a requisição: Status ${requestResponse.status}, JSON: ${JSON.stringify(await requestResponse.json(), null, 2)}`);
