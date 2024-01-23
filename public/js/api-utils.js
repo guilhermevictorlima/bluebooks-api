@@ -41,7 +41,7 @@ async function sendAPIRequest(jsonsArray) {
 		requestJsons: jsonsArray
 	};
 
-	fetch('http://localhost:3000/api', {
+	fetch(`${window.location.origin}/api`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
