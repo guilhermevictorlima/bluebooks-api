@@ -68,7 +68,7 @@ server.post('/', (req, res) => {
 				responses = await makeRequest(null, '', json.tokenId, json.tokenSecret, json.url, json.httpMethod);
 			}
 
-			console.log(`Quantidade de respostas: ${responses.length}`);
+			console.log(`Quantidade de respostas: ${responses.length || 1}`);
 			res.status(200).json(responses);
 		} catch (error) {
 			console.error(error);
