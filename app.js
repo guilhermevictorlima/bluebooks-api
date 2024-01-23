@@ -13,6 +13,8 @@ server.use(function (req, res, next) {
 	next();
 });
 
+server.use(express.static('public'));
+
 
 async function makeRequest(body, requestName, tokenId, tokenSecret, url, httpMethod) {
 	const requestResponse = await fetch(url, {
@@ -26,7 +28,7 @@ async function makeRequest(body, requestName, tokenId, tokenSecret, url, httpMet
 
 	if (requestResponse.ok) {
 		console.log(`Requisição enviada com sucesso: ${requestName ? requestName : httpMethod}`);
-		return httpMethod === 'DELETE' ? requestResponse.status : await requestResponse.json();
+		return httpMethod === 'DELETE' ? requestResponse.statusg : await requestResponse.json();
 	} else {
 		console.log(JSON.stringify(body, null, 2));
 		console.error(`Algo de errado ocorreu ao realizar a requisição: Status ${requestResponse.status}, JSON: ${JSON.stringify(await requestResponse.json(), null, 2)}`);
@@ -49,7 +51,10 @@ async function sendRequestsByJsons(jsonArray, tokenId, tokenSecret, url, httpMet
 	return responses;
 }
 
-server.post('/', (req, res) => {
+
+server.get('/', (req, res) => res.redirect('index.html'));
+
+server.post('/api', (req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
 
 	let data = '';
